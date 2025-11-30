@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './user.entity';
+import { User, UserRole } from './user.entity';
 
 @Injectable()
 export class UsersService {
@@ -10,8 +10,12 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  findAll(): Promise<User[]> {
-    return this.usersRepository.find();
+  findAll(includeInactive = false): Promise<User[]> {
+    if (includeInactive) {
+      return this.usersRepository.find();
+    }
+
+    return this.usersRepository.find({ where: { active: true } });
   }
 
   findOne(id: string): Promise<User | null> {
@@ -24,6 +28,14 @@ export class UsersService {
 
   create(user: User): Promise<User> {
     return this.usersRepository.save(user);
+  }
+
+  findVisibleFor(role?: UserRole): Promise<User[]> {
+    if (role === UserRole.Admin) {
+      return this.usersRepository.find();
+    }
+
+    return this.usersRepository.find({ where: { active: true } });
   }
 
   async remove(id: string): Promise<void> {
