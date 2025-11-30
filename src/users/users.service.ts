@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { User, UserRole } from './user.entity';
 
 @Injectable()
@@ -40,6 +40,23 @@ export class UsersService {
     }
 
     return this.usersRepository.save({ ...user, ...update });
+  }
+
+  async updateActivityBatch(
+    userIds: string[],
+    active: boolean,
+  ): Promise<User[]> {
+    if (userIds.length === 0) {
+      return [];
+    }
+
+    const users = await this.usersRepository.findBy({ id: In(userIds) });
+    if (users.length === 0) {
+      return [];
+    }
+
+    const updated = users.map((user) => ({ ...user, active }));
+    return this.usersRepository.save(updated);
   }
 
   async remove(id: string): Promise<void> {

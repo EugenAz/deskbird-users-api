@@ -20,6 +20,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { BatchUpdateActivityDto } from './dto/batch-update-activity.dto';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const sanitizeUser = ({ passwordHash, ...rest }: User) => rest;
@@ -79,5 +80,24 @@ export class UsersController {
   @Roles(UserRole.Admin)
   remove(@Param('id') id: string): Promise<void> {
     return this.usersService.remove(id);
+  }
+
+  @Patch('batch')
+  @Roles(UserRole.Admin)
+  @UsePipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  )
+  async batchUpdate(
+    @Body() { userIds, active }: BatchUpdateActivityDto,
+  ): Promise<ReturnType<typeof sanitizeUser>[]> {
+    const updated = await this.usersService.updateActivityBatch(
+      userIds,
+      active,
+    );
+    return updated.map(sanitizeUser);
   }
 }
