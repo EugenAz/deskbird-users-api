@@ -12,10 +12,15 @@ export class UsersService {
 
   findVisibleFor(role?: UserRole): Promise<User[]> {
     if (role === UserRole.Admin) {
-      return this.usersRepository.find();
+      return this.usersRepository.find({
+        order: { role: 'ASC', email: 'ASC' },
+      });
     }
 
-    return this.usersRepository.find({ where: { active: true } });
+    return this.usersRepository.find({
+      where: { active: true },
+      order: { role: 'ASC', email: 'ASC' },
+    });
   }
 
   findOne(id: string): Promise<User | null> {
