@@ -56,6 +56,25 @@ export class UsersController {
     return sanitizeUser(created);
   }
 
+  @Patch('batch')
+  @Roles(UserRole.Admin)
+  @UsePipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  )
+  async batchUpdate(
+    @Body() { userIds, active }: BatchUpdateActivityDto,
+  ): Promise<ReturnType<typeof sanitizeUser>[]> {
+    const updated = await this.usersService.updateActivityBatch(
+      userIds,
+      active,
+    );
+    return updated.map(sanitizeUser);
+  }
+
   @Patch(':id')
   @Roles(UserRole.Admin)
   @UsePipes(
@@ -80,24 +99,5 @@ export class UsersController {
   @Roles(UserRole.Admin)
   remove(@Param('id') id: string): Promise<void> {
     return this.usersService.remove(id);
-  }
-
-  @Patch('batch')
-  @Roles(UserRole.Admin)
-  @UsePipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  )
-  async batchUpdate(
-    @Body() { userIds, active }: BatchUpdateActivityDto,
-  ): Promise<ReturnType<typeof sanitizeUser>[]> {
-    const updated = await this.usersService.updateActivityBatch(
-      userIds,
-      active,
-    );
-    return updated.map(sanitizeUser);
   }
 }
