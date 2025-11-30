@@ -10,8 +10,8 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  findAll(includeInactive = false): Promise<User[]> {
-    if (includeInactive) {
+  findVisibleFor(role?: UserRole): Promise<User[]> {
+    if (role === UserRole.Admin) {
       return this.usersRepository.find();
     }
 
@@ -30,12 +30,16 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  findVisibleFor(role?: UserRole): Promise<User[]> {
-    if (role === UserRole.Admin) {
-      return this.usersRepository.find();
+  async update(
+    id: string,
+    update: Partial<Pick<User, 'firstName' | 'lastName' | 'role' | 'active'>>,
+  ): Promise<User | null> {
+    const user = await this.usersRepository.findOneBy({ id });
+    if (!user) {
+      return null;
     }
 
-    return this.usersRepository.find({ where: { active: true } });
+    return this.usersRepository.save({ ...user, ...update });
   }
 
   async remove(id: string): Promise<void> {
