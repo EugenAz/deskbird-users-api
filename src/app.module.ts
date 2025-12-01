@@ -9,7 +9,7 @@ import { AuthModule } from './auth/auth.module';
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DB_HOST,
+      host: process.env.DB_HOST ?? 'db',
       port: Number(process.env.DB_PORT) ?? 3001,
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
